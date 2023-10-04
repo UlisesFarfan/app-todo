@@ -213,7 +213,7 @@ const NavBar = () => {
                 variant="solid"
                 className="bg-slate-900 text-slate-50 ml-4"
               >
-                {authUser !== null && authUser.name}
+                {authUser !== null ? authUser.name : ""}
                 <Avatar src={authUser !== null ? authUser.img : ""} size="sm" />
               </Button>
             </DropdownTrigger>
