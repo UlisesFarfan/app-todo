@@ -54,7 +54,9 @@ const Home = () => {
         <div className="max-w-[1200px] flex flex-col xl:flex-row">
           <div className="gap-4 flex flex-col">
             <span className="text-3xl">
-              <p className="text-sky-500" >Do you ever feel like tasks are piling up and becoming overwhelming?</p>
+              <p className="text-sky-500" >
+                Do you ever feel like tasks are piling up and becoming overwhelming?
+              </p>
               So do we! But don't worry, we're here to help you regain control of your daily life.
             </span>
             <div>
