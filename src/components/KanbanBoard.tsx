@@ -29,7 +29,7 @@ function KanbanBoard() {
   const dispatch = useAppDispatch()
   const [columns, setColumns] = useState<ColumnResponse[]>([]);
   const [columnsId, setColumnsId] = useState<string[]>([])
-  const [workspace_name, setWorkspace_name] = useState<null | string>("")
+  const [workspace_name, setWorkspace_name] = useState<string>("")
   const [editMode, setEditMode] = useState<boolean>(false)
   const [activeColumn, setActiveColumn] = useState<ColumnResponse | null>(null);
   const [activeTask, setActiveTask] = useState<NoteResponse | null>(null);
@@ -214,7 +214,7 @@ function KanbanBoard() {
       workspace_id: currentWorkSpace!._id,
       name: "New Column"
     }
-    dispatch(PostColumnAsync({ columns: columns!, new_column: new_column }))
+    dispatch(PostColumnAsync({ workspace_name: workspace_name, columns: columns!, new_column: new_column }))
   }
 
   function deleteColumn(id: string) {

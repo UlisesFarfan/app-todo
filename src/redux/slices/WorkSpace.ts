@@ -48,7 +48,7 @@ export const WorkSpaceSlice: any = createSlice({
       const new_columns = [...payload.columns, new_column];
       let new_current_workspace = state.currentWorkSpace;
       if (new_current_workspace !== null) {
-        new_current_workspace = { ...new_current_workspace, columns: new_columns }
+        new_current_workspace = { ...new_current_workspace, columns: new_columns, name: payload.workspace_name }
       }
       state.currentWorkSpace = new_current_workspace;
     });

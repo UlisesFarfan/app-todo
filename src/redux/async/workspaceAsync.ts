@@ -93,7 +93,7 @@ export const DeleteWorkSpaceAsync = createAsyncThunk(
 
 export const PostColumnAsync = createAsyncThunk(
   "workspace/postcolumn",
-  async ({ columns, new_column }: { columns: ColumnResponse[]; new_column: CreateColumn }, thunkApi) => {
+  async ({ workspace_name, columns, new_column }: { workspace_name: string; columns: ColumnResponse[]; new_column: CreateColumn }, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       const { data } = await axios<WebResponse<ColumnResponse>>({
@@ -107,6 +107,7 @@ export const PostColumnAsync = createAsyncThunk(
       });
       data.data.workspace_id = new_column.workspace_id
       return {
+        workspace_name: workspace_name,
         data: data.data,
         columns: columns
       }
