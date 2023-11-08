@@ -22,6 +22,8 @@ import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceA
 import { Button, Input, Modal, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import EditIcon from "../icons/EditIcon";
 import TrashIcon from "../icons/TrashIcon";
+import { BsShare } from "react-icons/bs"
+import { WorkSpaceResponse } from "../interface/workspace";
 
 function KanbanBoard() {
 
@@ -79,41 +81,49 @@ function KanbanBoard() {
                     setEditMode(false);
                     if (workspace_name !== currentWorkSpace.name) {
                       dispatch(UpdateWorkSpaceAsync({
-                        _id: currentWorkSpace._id,
-                        name: workspace_name!
+                        data: {
+                          _id: currentWorkSpace._id,
+                          name: workspace_name!,
+                        },
+                        currentWorkSpace: currentWorkSpace
                       }))
                     }
                   }
                 }} />}
-            <Button className="dark stroke-white" size="sm" onPress={onOpen}>
-              <TrashIcon />
-            </Button>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange} className="dark">
-              <ModalContent>
-                {(onClose) => (
-                  <>
-                    <ModalHeader className="flex flex-col gap-1">Are you sure you want to delete the workspace?</ModalHeader>
-                    <ModalFooter>
-                      <Button color="primary" variant="light" onPress={onClose}>
-                        Close
-                      </Button>
-                      <Button color="danger" onPress={() => {
-                        onClose()
-                        if (currentWorkSpace !== null) {
-                          dispatch(DeleteWorkSpaceAsync(currentWorkSpace._id))
-                            .unwrap()
-                            .then((() => {
-                              dispatch(GetWorkSpaceAsync())
-                            }))
-                        }
-                      }}>
-                        Delete
-                      </Button>
-                    </ModalFooter>
-                  </>
-                )}
-              </ModalContent>
-            </Modal>
+            <div className="gap-4 flex">
+              <Button className="dark stroke-white" size="sm" onPress={onOpen}>
+                <BsShare className="text-xl" />
+              </Button>
+              <Button className="dark stroke-white" size="sm" onPress={onOpen}>
+                <TrashIcon />
+              </Button>
+              <Modal isOpen={isOpen} onOpenChange={onOpenChange} className="dark">
+                <ModalContent>
+                  {(onClose) => (
+                    <>
+                      <ModalHeader className="flex flex-col gap-1">Are you sure you want to delete the workspace?</ModalHeader>
+                      <ModalFooter>
+                        <Button color="primary" variant="light" onPress={onClose}>
+                          Close
+                        </Button>
+                        <Button color="danger" onPress={() => {
+                          onClose()
+                          if (currentWorkSpace !== null) {
+                            dispatch(DeleteWorkSpaceAsync(currentWorkSpace._id))
+                              .unwrap()
+                              .then((() => {
+                                dispatch(GetWorkSpaceAsync())
+                              }))
+                          }
+                        }}>
+                          Delete
+                        </Button>
+                      </ModalFooter>
+                    </>
+                  )}
+                </ModalContent>
+              </Modal>
+            </div>
           </div>
           <div className="flex gap-4">
             <SortableContext items={columns !== null ? columnsId : []}>
@@ -200,13 +210,15 @@ function KanbanBoard() {
 
   function updateTask(id: string, task: string, columnId: string, signal: AbortSignal) {
     let column = columns?.find((el) => el._id === columnId)
+    let new_columns: ColumnResponse[] = []
     if (column) {
       const new_notes: NoteResponse[] = column?.notes.map(el => el._id === id ? { ...el, task: task } : el)
       column = { ...column, notes: new_notes }
-      const new_columns = columns?.map(el => el._id === columnId ? column! : el)
+      new_columns = columns?.map(el => el._id === columnId ? column! : el)
       setColumns(new_columns!)
     }
-    dispatch(UpdateTaskAsync({ _id: id, task: task, columnId: columnId, signal: signal }))
+    const new_currentWorkSpace: WorkSpaceResponse = { ...currentWorkSpace!, columns: new_columns }
+    dispatch(UpdateTaskAsync({ data: { _id: id, task: task, columnId: columnId, signal: signal }, currentWorkSpace: new_currentWorkSpace }))
   }
 
   function createNewColumn() {
