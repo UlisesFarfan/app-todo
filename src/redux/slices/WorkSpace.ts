@@ -39,15 +39,18 @@ export const WorkSpaceSlice: any = createSlice({
     });
     builder.addCase(PostColumnAsync.fulfilled, (state, { payload }) => {
       const new_column: ColumnResponse = {
-        _id: payload._id,
-        name: payload.name,
-        notes: payload.notes,
-        created_at: payload.created_at,
-        update_at: payload.update_at
+        _id: payload.data._id,
+        name: payload.data.name,
+        notes: payload.data.notes,
+        created_at: payload.data.created_at,
+        update_at: payload.data.update_at
+      };
+      const new_columns = [...payload.columns, new_column];
+      let new_current_workspace = state.currentWorkSpace;
+      if (new_current_workspace !== null) {
+        new_current_workspace = { ...new_current_workspace, columns: new_columns }
       }
-      const new_current_workspace = state.currentWorkSpace
-      new_current_workspace?.columns.push(new_column)
-      state.currentWorkSpace = new_current_workspace
+      state.currentWorkSpace = new_current_workspace;
     });
     builder.addCase(DeleteColumnAsync.fulfilled, (state, { payload }) => {
       if (state.currentWorkSpace) {
@@ -65,7 +68,7 @@ export const WorkSpaceSlice: any = createSlice({
       }
       const new_column = { ...payload.columns?.find(el => el._id === payload.new_task.columnId) }
       if (new_column) new_column.notes = [...new_column.notes!, new_task];
-      const new_columns: any =payload. columns!.map(el => el._id === payload.new_task.columnId ? new_column : el)
+      const new_columns: any = payload.columns!.map(el => el._id === payload.new_task.columnId ? new_column : el)
       const new_current_workspace = state.currentWorkSpace
       new_current_workspace!.columns = new_columns
       state.currentWorkSpace = new_current_workspace
