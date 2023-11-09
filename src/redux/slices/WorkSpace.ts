@@ -105,6 +105,7 @@ export const WorkSpaceSlice: any = createSlice({
       if (state.workspaces !== null) {
         const new_workspaces = state.workspaces?.map(el => el._id === payload.currentWorkSpace?._id ? { ...payload.currentWorkSpace, name: payload.name } : el);
         state.workspaces = new_workspaces;
+        state.currentWorkSpace = { ...payload.currentWorkSpace, name: payload.name };
       }
     });
     builder.addCase(UpdateTaskAsync.fulfilled, (state, { payload }) => {
