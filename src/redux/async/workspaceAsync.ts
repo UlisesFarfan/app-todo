@@ -3,7 +3,7 @@ import axios from "axios";
 import { WebResponse } from "../../interface/api_response";
 import { ColumnResponse, CreateColumn, UpdateColumn, UpdateNoteOrder } from "../../interface/column";
 import { NoteResponse, PostNote, UpdateNote } from "../../interface/note";
-import { CreateWorkSpace, UpdateColumnOrder, UpdateWorkSpace } from "../../interface/workspace";
+import { CreateWorkSpace, UpdateColumnOrder, UpdateWorkSpace, WorkSpaceResponse } from "../../interface/workspace";
 
 export const GetWorkSpaceAsync = createAsyncThunk(
   "workspace/getworkspace",
@@ -28,7 +28,7 @@ export const GetWorkSpaceAsync = createAsyncThunk(
 
 export const UpdateWorkSpaceAsync = createAsyncThunk(
   "workspace/updateworkspace",
-  async (data: UpdateWorkSpace, thunkApi) => {
+  async ({ data, currentWorkSpace }: { data: UpdateWorkSpace; currentWorkSpace: WorkSpaceResponse }, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       await axios({
@@ -40,7 +40,10 @@ export const UpdateWorkSpaceAsync = createAsyncThunk(
           Authorization: `Bearer ${token}`
         },
       });
-      return null
+      return {
+        name: data.name,
+        currentWorkSpace: currentWorkSpace,
+      }
     } catch (error: any) {
       // If error, return error message
       throw thunkApi.rejectWithValue(error.response.data.message);
@@ -208,7 +211,7 @@ export const DeleteTaskAsync = createAsyncThunk(
 
 export const UpdateTaskAsync = createAsyncThunk(
   "workspace/updatetask",
-  async (data: UpdateNote, thunkApi) => {
+  async ({ data, currentWorkSpace }: { data: UpdateNote; currentWorkSpace: WorkSpaceResponse; }, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       await axios({
@@ -221,7 +224,7 @@ export const UpdateTaskAsync = createAsyncThunk(
         },
         signal: data.signal
       });
-      return data
+      return currentWorkSpace
     } catch (error: any) {
       // If error, return error message
       throw thunkApi.rejectWithValue(error.response.data.message);

@@ -65,7 +65,7 @@ const Home = () => {
               </Button>
             </div>
           </div>
-          <img src={appimg} alt="" className="w-[45rem]" />
+          <img src={appimg} alt="illustration of the application" className="w-[45rem]" />
         </div>
       }
     </div>
