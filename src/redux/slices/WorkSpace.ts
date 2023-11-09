@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { initialWorkSpaceState } from "../../interface/slice";
-import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceAsync, PostColumnAsync, PostTaskAsync, UpdateTaskAsync, UpdateWorkSpaceAsync } from "../async/workspaceAsync";
+import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceAsync, PostColumnAsync, PostTaskAsync, UpdateColumnAsync, UpdateTaskAsync, UpdateWorkSpaceAsync } from "../async/workspaceAsync";
 import { ColumnResponse } from "../../interface/column";
 import { NoteResponse } from "../../interface/note";
 
@@ -35,7 +35,7 @@ export const WorkSpaceSlice: any = createSlice({
       state.workspaces = null;
     });
     builder.addCase(DeleteWorkSpaceAsync.fulfilled, (state, _) => {
-      state.currentWorkSpace = null
+      state.currentWorkSpace = null;
     });
     builder.addCase(PostColumnAsync.fulfilled, (state, { payload }) => {
       const new_column: ColumnResponse = {
@@ -58,14 +58,14 @@ export const WorkSpaceSlice: any = createSlice({
     });
     builder.addCase(DeleteColumnAsync.fulfilled, (state, { payload }) => {
       if (state.currentWorkSpace) {
-        const new_current_workspace = state.currentWorkSpace
-        new_current_workspace.columns = payload
+        const new_current_workspace = state.currentWorkSpace;
+        new_current_workspace.columns = payload;
         if (state.workspaces !== null) {
           const new_workspaces = state.workspaces?.map(el => el._id === new_current_workspace?._id ? new_current_workspace : el);
           state.workspaces = new_workspaces;
         }
-        state.currentWorkSpace = new_current_workspace
-      }
+        state.currentWorkSpace = new_current_workspace;
+      };
     });
     builder.addCase(PostTaskAsync.fulfilled, (state, { payload }) => {
       const new_task: NoteResponse = {
@@ -73,32 +73,32 @@ export const WorkSpaceSlice: any = createSlice({
         task: payload.new_task.task,
         created_at: payload.new_task.created_at,
         update_at: payload.new_task.update_at,
-      }
-      const new_column = { ...payload.columns?.find(el => el._id === payload.new_task.columnId) }
+      };
+      const new_column = { ...payload.columns?.find(el => el._id === payload.new_task.columnId) };
       if (new_column) new_column.notes = [...new_column.notes!, new_task];
-      const new_columns: any = payload.columns!.map(el => el._id === payload.new_task.columnId ? new_column : el)
-      const new_current_workspace = state.currentWorkSpace
-      new_current_workspace!.columns = new_columns
+      const new_columns: any = payload.columns!.map(el => el._id === payload.new_task.columnId ? new_column : el);
+      const new_current_workspace = state.currentWorkSpace;
+      new_current_workspace!.columns = new_columns;
       if (state.workspaces !== null) {
         const new_workspaces = state.workspaces?.map(el => el._id === new_current_workspace?._id ? new_current_workspace : el);
         state.workspaces = new_workspaces;
       }
-      state.currentWorkSpace = new_current_workspace
+      state.currentWorkSpace = new_current_workspace;
     });
     builder.addCase(DeleteTaskAsync.fulfilled, (state, { payload }) => {
       if (state.currentWorkSpace) {
-        const new_current_workspace = state.currentWorkSpace
+        const new_current_workspace = state.currentWorkSpace;
         new_current_workspace.columns.forEach((el) => {
           if (el._id === payload.columnId) {
-            const new_notes = el.notes.filter((el) => el._id !== payload.noteId)
-            el.notes = new_notes
+            const new_notes = el.notes.filter((el) => el._id !== payload.noteId);
+            el.notes = new_notes;
           }
         })
         if (state.workspaces !== null) {
           const new_workspaces = state.workspaces?.map(el => el._id === new_current_workspace?._id ? new_current_workspace : el);
           state.workspaces = new_workspaces;
         }
-        state.currentWorkSpace = new_current_workspace
+        state.currentWorkSpace = new_current_workspace;
       }
     });
     builder.addCase(UpdateWorkSpaceAsync.fulfilled, (state, { payload }) => {
@@ -109,7 +109,10 @@ export const WorkSpaceSlice: any = createSlice({
       }
     });
     builder.addCase(UpdateTaskAsync.fulfilled, (state, { payload }) => {
-      state.workspaces = state.workspaces!.map(el => el._id === payload._id ? payload : el)
+      state.workspaces = state.workspaces!.map(el => el._id === payload._id ? payload : el);
+    });
+    builder.addCase(UpdateColumnAsync.fulfilled, (state, { payload }) => {
+      state.workspaces = state.workspaces!.map(el => el._id === payload._id ? payload : el);
     });
   },
 });

@@ -144,7 +144,7 @@ export const DeleteColumnAsync = createAsyncThunk(
 
 export const UpdateColumnAsync = createAsyncThunk(
   "workspace/updatecolumn",
-  async (data: UpdateColumn, thunkApi) => {
+  async ({ data, currentWorkSpace }: { data: UpdateColumn, currentWorkSpace: WorkSpaceResponse }, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       await axios({
@@ -157,7 +157,7 @@ export const UpdateColumnAsync = createAsyncThunk(
         },
         signal: data.signal
       });
-      return null
+      return currentWorkSpace
     } catch (error: any) {
       // If error, return error message
       throw thunkApi.rejectWithValue(error.response.data.message);

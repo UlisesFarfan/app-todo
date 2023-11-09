@@ -241,7 +241,8 @@ function KanbanBoard() {
       return { ...col, name };
     });
     setColumns(newColumns);
-    dispatch(UpdateColumnAsync({ _id: id, name: name, signal: signal }))
+    const new_currentWorkSpace: WorkSpaceResponse = { ...currentWorkSpace!, columns: newColumns }
+    dispatch(UpdateColumnAsync({ data: { _id: id, name: name, signal: signal }, currentWorkSpace: new_currentWorkSpace! }))
   }
 
   function onDragStart(event: DragStartEvent) {
