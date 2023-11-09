@@ -22,7 +22,6 @@ import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceA
 import { Button, Input, Modal, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import EditIcon from "../icons/EditIcon";
 import TrashIcon from "../icons/TrashIcon";
-import { BsShare } from "react-icons/bs"
 import { WorkSpaceResponse } from "../interface/workspace";
 
 function KanbanBoard() {
@@ -91,9 +90,6 @@ function KanbanBoard() {
                   }
                 }} />}
             <div className="gap-4 flex">
-              <Button className="dark stroke-white" size="sm" onPress={onOpen}>
-                <BsShare className="text-xl" />
-              </Button>
               <Button className="dark stroke-white" size="sm" onPress={onOpen}>
                 <TrashIcon />
               </Button>
