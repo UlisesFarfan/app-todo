@@ -9,7 +9,7 @@ import { gapi } from "gapi-script";
 import { CreateUser, Login } from "../interface/user";
 import { RegisterAsync, LoginAsync } from "../redux/async/authAsync";
 
-const Home = () => {
+const PublicHome = () => {
   const clientId = import.meta.env.VITE_CLIENT_ID
   gapi.load("client:auth2", () => {
     gapi.client.init({
@@ -72,4 +72,4 @@ const Home = () => {
   )
 }
 
-export default Home;
+export default PublicHome;

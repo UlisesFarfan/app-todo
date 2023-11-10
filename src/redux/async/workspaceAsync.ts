@@ -26,9 +26,30 @@ export const GetWorkSpaceAsync = createAsyncThunk(
   }
 );
 
+export const GetCurrentWorkSpace = createAsyncThunk(
+  "workspace/getcurrentworkspace",
+  async (workspace_id: string, thunkApi) => {
+    try {
+      const token = localStorage.getItem("access_token")
+      const { data } = await axios<WebResponse<WorkSpaceResponse>>({
+        method: "GET",
+        url: import.meta.env.VITE_API_ENDPOINT + "/api/work_space/" + workspace_id,
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`
+        },
+      });
+      return data.data
+    } catch (error: any) {
+      // If error, return error message
+      throw thunkApi.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
 export const UpdateWorkSpaceAsync = createAsyncThunk(
   "workspace/updateworkspace",
-  async ({ data, currentWorkSpace }: { data: UpdateWorkSpace; currentWorkSpace: WorkSpaceResponse }, thunkApi) => {
+  async (data: UpdateWorkSpace, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       await axios({
@@ -40,10 +61,7 @@ export const UpdateWorkSpaceAsync = createAsyncThunk(
           Authorization: `Bearer ${token}`
         },
       });
-      return {
-        name: data.name,
-        currentWorkSpace: currentWorkSpace,
-      }
+      return null
     } catch (error: any) {
       // If error, return error message
       throw thunkApi.rejectWithValue(error.response.data.message);
@@ -144,7 +162,7 @@ export const DeleteColumnAsync = createAsyncThunk(
 
 export const UpdateColumnAsync = createAsyncThunk(
   "workspace/updatecolumn",
-  async ({ data, currentWorkSpace }: { data: UpdateColumn, currentWorkSpace: WorkSpaceResponse }, thunkApi) => {
+  async (data: UpdateColumn, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       await axios({
@@ -157,7 +175,7 @@ export const UpdateColumnAsync = createAsyncThunk(
         },
         signal: data.signal
       });
-      return currentWorkSpace
+      return null
     } catch (error: any) {
       // If error, return error message
       throw thunkApi.rejectWithValue(error.response.data.message);
@@ -211,7 +229,7 @@ export const DeleteTaskAsync = createAsyncThunk(
 
 export const UpdateTaskAsync = createAsyncThunk(
   "workspace/updatetask",
-  async ({ data, currentWorkSpace }: { data: UpdateNote; currentWorkSpace: WorkSpaceResponse; }, thunkApi) => {
+  async (data: UpdateNote, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")
       await axios({
@@ -224,7 +242,7 @@ export const UpdateTaskAsync = createAsyncThunk(
         },
         signal: data.signal
       });
-      return currentWorkSpace
+      return null
     } catch (error: any) {
       // If error, return error message
       throw thunkApi.rejectWithValue(error.response.data.message);

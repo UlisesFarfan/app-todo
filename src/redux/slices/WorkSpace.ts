@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { initialWorkSpaceState } from "../../interface/slice";
-import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceAsync, PostColumnAsync, PostTaskAsync, UpdateColumnAsync, UpdateTaskAsync, UpdateWorkSpaceAsync } from "../async/workspaceAsync";
+import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetCurrentWorkSpace, GetWorkSpaceAsync, PostColumnAsync, PostTaskAsync } from "../async/workspaceAsync";
 import { ColumnResponse } from "../../interface/column";
 import { NoteResponse } from "../../interface/note";
 
@@ -14,11 +14,7 @@ const initialState = {
 export const WorkSpaceSlice: any = createSlice({
   name: "workspace",
   initialState,
-  reducers: {
-    setCurrentWorkSpace: (state, { payload }) => {
-      state.currentWorkSpace = payload
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     /* LOGIN */
     builder.addCase(GetWorkSpaceAsync.pending, (state, _action) => {
@@ -36,6 +32,9 @@ export const WorkSpaceSlice: any = createSlice({
     });
     builder.addCase(DeleteWorkSpaceAsync.fulfilled, (state, _) => {
       state.currentWorkSpace = null;
+    });
+    builder.addCase(GetCurrentWorkSpace.fulfilled, (state, { payload }) => {
+      state.currentWorkSpace = payload;
     });
     builder.addCase(PostColumnAsync.fulfilled, (state, { payload }) => {
       const new_column: ColumnResponse = {
@@ -100,19 +99,6 @@ export const WorkSpaceSlice: any = createSlice({
         }
         state.currentWorkSpace = new_current_workspace;
       }
-    });
-    builder.addCase(UpdateWorkSpaceAsync.fulfilled, (state, { payload }) => {
-      if (state.workspaces !== null) {
-        const new_workspaces = state.workspaces?.map(el => el._id === payload.currentWorkSpace?._id ? { ...payload.currentWorkSpace, name: payload.name } : el);
-        state.workspaces = new_workspaces;
-        state.currentWorkSpace = { ...payload.currentWorkSpace, name: payload.name };
-      }
-    });
-    builder.addCase(UpdateTaskAsync.fulfilled, (state, { payload }) => {
-      state.workspaces = state.workspaces!.map(el => el._id === payload._id ? payload : el);
-    });
-    builder.addCase(UpdateColumnAsync.fulfilled, (state, { payload }) => {
-      state.workspaces = state.workspaces!.map(el => el._id === payload._id ? payload : el);
     });
   },
 });
