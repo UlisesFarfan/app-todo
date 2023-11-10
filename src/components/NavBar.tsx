@@ -2,14 +2,13 @@ import { gapi } from "gapi-script";
 import { GoogleLogin, useGoogleLogout } from "react-google-login"
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Avatar, Skeleton, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
-import { GetWorkSpaceAsync, PostWorkSpaceAsync } from "../redux/async/workspaceAsync";
+import { GetCurrentWorkSpace, GetWorkSpaceAsync, PostWorkSpaceAsync } from "../redux/async/workspaceAsync";
 import { RegisterAsync, LoginAsync } from "../redux/async/authAsync";
 import { CreateUser, Login } from "../interface/user";
-import { useEffect } from "react";
-import { setCurrentWorkSpace } from "../redux/slices/WorkSpace";
 import { initialState } from "../redux/reducers/combineReducers";
 import PlusIcon from "../icons/PlusIcon";
 import { SocialLink, TwitterIcon, InstagramIcon, GitHubIcon, LinkedInIcon } from "./SocialIcons";
+import { NavLink } from "react-router-dom";
 
 const NavBar = () => {
   const clientId = import.meta.env.VITE_CLIENT_ID
@@ -19,7 +18,6 @@ const NavBar = () => {
     });
   });
   const items: Iterable<object> | undefined = [];
-
   const dispatch = useAppDispatch();
   const { workspaces, loading } = useAppSelector((state: initialState) => state.workspace);
   const { logged, authUser } = useAppSelector((state: initialState) => state.auth);
@@ -27,7 +25,6 @@ const NavBar = () => {
   const { signOut } = useGoogleLogout({
     clientId: import.meta.env.VITE_CLIENT_ID
   })
-
   const handleSuccess = async (e: any) => {
     const createData = {
       name: e.profileObj.name,
@@ -49,53 +46,46 @@ const NavBar = () => {
       })
   }
 
-  useEffect(() => {
-    dispatch(GetWorkSpaceAsync())
-  }, [logged])
-
   return (
     <nav className="flex fixed justify-center w-full bg-transparent py-2 overflow-auto overflow-x-scroll">
       <div className="w-full flex justify-between max-w-[1200px]">
         {
-          workspaces !== null && logged ?
+          logged ?
             <div className="flex gap-4">
-              {workspaces.length > 0 &&
-                <Dropdown className="bg-slate-900">
-                  <Skeleton isLoaded={!loading} className="rounded-lg dark">
-                    <DropdownTrigger>
-                      <Button
-                        variant="solid"
-                        className="bg-slate-900 text-slate-50"
-                        isDisabled={loading}
+              <Dropdown className="bg-slate-900">
+                <Skeleton isLoaded={!loading} className="rounded-lg dark">
+                  <DropdownTrigger>
+                    <Button
+                      variant="solid"
+                      className="bg-slate-900 text-slate-50"
+                      isDisabled={loading}
+                      onClick={() => dispatch(GetWorkSpaceAsync())}
+                    >
+                      Work Spaces
+                    </Button>
+                  </DropdownTrigger>
+                </Skeleton>
+                <DropdownMenu aria-label="Dynamic Actions" items={workspaces !== null ? workspaces.length > 0 ? workspaces : [{ _id: "none", name: "You have no workspaces", rol: "" }] : [{ _id: "none", name: "Loading...", rol: "" }]} >
+                  {(item: any) => (
+                    <DropdownItem
+                      key={item._id}
+                      onClick={() => dispatch(GetCurrentWorkSpace(item._id))}
+                    >
+                      <NavLink
+                        to={item._id !== "none" ? `/workspace` : ""}
+                        className="flex flex-col w-full"
                       >
-                        Work Spaces
-                      </Button>
-                    </DropdownTrigger>
-                  </Skeleton>
-                  <DropdownMenu aria-label="Dynamic Actions" items={workspaces !== null ? workspaces : []}>
-                    {(item: any) => (
-                      <DropdownItem
-                        key={item._id}
-                        onClick={() => dispatch(setCurrentWorkSpace(item))}
-                      >
-                        <div className="flex flex-col w-full">
-                          <span>
-                            {item.name}
-                          </span>
-                          {item.users && item.users.map((el: any) => {
-                            if (authUser != null && el.user_id === authUser._id) {
-                              return (
-                                <span className="text-lime-600 flex justify-end" key={item._id}>
-                                  {el.role}
-                                </span>
-                              )
-                            }
-                          })}
-                        </div>
-                      </DropdownItem>
-                    )}
-                  </DropdownMenu>
-                </Dropdown>}
+                        <span>
+                          {item.name}
+                        </span>
+                        <span className="text-lime-600 flex justify-end">
+                          {item.rol}
+                        </span>
+                      </NavLink>
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
               <Button className="dark" variant="ghost"
                 onPress={() => {
                   if (authUser)
@@ -106,7 +96,7 @@ const NavBar = () => {
                       })
                 }}
               >
-                Add a Work space
+                Add a Workspace
                 <PlusIcon />
               </Button>
               <div>

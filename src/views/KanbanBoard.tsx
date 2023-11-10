@@ -1,6 +1,6 @@
 import PlusIcon from "../icons/PlusIcon";
 import { useEffect, useState } from "react";
-import ColumnContainer from "./ColumnContainer";
+import ColumnContainer from "../components/ColumnContainer";
 import {
   DndContext,
   DragEndEvent,
@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
-import TaskCard from "./TaskCard";
+import TaskCard from "../components/TaskCard";
 import { useAppDispatch, useAppSelector } from "../hooks/useRedux";
 import { initialState } from "../redux/reducers/combineReducers";
 import { ColumnResponse, CreateColumn } from "../interface/column";
@@ -22,11 +22,11 @@ import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceA
 import { Button, Input, Modal, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import EditIcon from "../icons/EditIcon";
 import TrashIcon from "../icons/TrashIcon";
-import { WorkSpaceResponse } from "../interface/workspace";
+import { useNavigate } from "react-router-dom";
 
 function KanbanBoard() {
 
-  const { currentWorkSpace, workspaces } = useAppSelector((state: initialState) => state.workspace);
+  const { currentWorkSpace } = useAppSelector((state: initialState) => state.workspace);
   const dispatch = useAppDispatch()
   const [columns, setColumns] = useState<ColumnResponse[]>([]);
   const [columnsId, setColumnsId] = useState<string[]>([])
@@ -35,6 +35,7 @@ function KanbanBoard() {
   const [activeColumn, setActiveColumn] = useState<ColumnResponse | null>(null);
   const [activeTask, setActiveTask] = useState<NoteResponse | null>(null);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const navigate = useNavigate()
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -54,7 +55,7 @@ function KanbanBoard() {
 
   return (
     <div className="m-auto flex flex-col h-full w-full items-center overflow-x-auto overflow-y-hidden px-[40px]">
-      {currentWorkSpace ? <DndContext
+      {currentWorkSpace && <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
@@ -80,11 +81,8 @@ function KanbanBoard() {
                     setEditMode(false);
                     if (workspace_name !== currentWorkSpace.name) {
                       dispatch(UpdateWorkSpaceAsync({
-                        data: {
-                          _id: currentWorkSpace._id,
-                          name: workspace_name!,
-                        },
-                        currentWorkSpace: currentWorkSpace
+                        _id: currentWorkSpace._id,
+                        name: workspace_name!,
                       }))
                     }
                   }
@@ -110,6 +108,7 @@ function KanbanBoard() {
                               .then((() => {
                                 dispatch(GetWorkSpaceAsync())
                               }))
+                            navigate("/");
                           }
                         }}>
                           Delete
@@ -172,18 +171,6 @@ function KanbanBoard() {
           document.body
         )}
       </DndContext>
-        :
-        <div className="w-full h-full justify-center items-center flex" >
-          {workspaces !== null && workspaces.length > 0 ?
-            <p className="text-4xl pb-[10rem]">
-              Select one of your workspaces to see your pending tasks!
-            </p>
-            :
-            <p className="text-4xl pb-[10rem]">
-              Create your first workspace and start organizing your day!
-            </p>
-          }
-        </div>
       }
     </div>
   );
@@ -213,8 +200,7 @@ function KanbanBoard() {
       new_columns = columns?.map(el => el._id === columnId ? column! : el)
       setColumns(new_columns!)
     }
-    const new_currentWorkSpace: WorkSpaceResponse = { ...currentWorkSpace!, columns: new_columns }
-    dispatch(UpdateTaskAsync({ data: { _id: id, task: task, columnId: columnId, signal: signal }, currentWorkSpace: new_currentWorkSpace }))
+    dispatch(UpdateTaskAsync({ _id: id, task: task, columnId: columnId, signal: signal }))
   }
 
   function createNewColumn() {
@@ -241,8 +227,7 @@ function KanbanBoard() {
       return { ...col, name };
     });
     setColumns(newColumns);
-    const new_currentWorkSpace: WorkSpaceResponse = { ...currentWorkSpace!, columns: newColumns }
-    dispatch(UpdateColumnAsync({ data: { _id: id, name: name, signal: signal }, currentWorkSpace: new_currentWorkSpace! }))
+    dispatch(UpdateColumnAsync({ _id: id, name: name, signal: signal }))
   }
 
   function onDragStart(event: DragStartEvent) {
@@ -265,19 +250,32 @@ function KanbanBoard() {
     const activeId = active.id;
     const overId = over.id;
     if (activeId === overId) return;
-    const isActiveATask = active.data.current?.type === "task";
     const isActiveAColumn = active.data.current?.type === "Column";
-    const isOverATask = over.data.current?.type === "task";
     if (isActiveAColumn) {
       if (columns === null) return null
       const activeColumnIndex = columns.findIndex((col) => col._id === activeId);
       const overColumnIndex = columns.findIndex((col) => col._id === overId);
       const new_columns_order = arrayMove(columns, activeColumnIndex, overColumnIndex)
+      setColumns(new_columns_order);
+      const columns_id = new_columns_order.map((col) => col._id)
+      setColumnsId(columns_id)
       dispatch(UpdateColumnsOrderAsync({
         _id: currentWorkSpace!._id,
         columns: new_columns_order.map(el => el._id)
       }))
     }
+  }
+
+  function onDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = active.id;
+    const overId = over.id;
+    if (activeId === overId) return;
+    const isActiveATask = active.data.current?.type === "task";
+    const isOverATask = over.data.current?.type === "task";
+    if (!isActiveATask) return;
+    // Im dropping a Task over another Task
     if (isActiveATask && isOverATask) {
       let column_to_push = columns?.filter((el) => el._id === over.data.current?.columnId)
       let column_to_pull = columns?.filter((el) => el._id === active.data.current?.columnId)
@@ -289,6 +287,7 @@ function KanbanBoard() {
         new_col.splice(over.data.current?.sortable.index, 0, active.data.current?.task)
         let new_notes = column_to_pull![0].notes.filter((el) => el._id !== active.id)
         let new_columns = columns?.map((el) => el._id === over.data.current?.columnId ? { ...el, notes: new_col } : el._id === active.data.current?.columnId ? { ...el, notes: new_notes } : el)
+        setColumns(new_columns!)
         const column_push = new_columns?.find((el) => el._id === over.data.current?.columnId)
         const column_pull = new_columns?.find((el) => el._id === active.data.current?.columnId)
         dispatch(UpdateNotesOrderAsync({
@@ -299,94 +298,39 @@ function KanbanBoard() {
         }))
       } else {
         const overIndex = column_to_push![0].notes!.findIndex((t) => t._id === overId);
-        let new_notes = column_to_push![0].notes.filter((t) => t._id !== active.id);
-        new_notes.splice(overIndex, 0, active.data.current?.task);
-        let new_columns = columns?.map((el) => el._id === over.data.current?.columnId ? { ...el, notes: new_notes } : el);
-        const column_push = new_columns?.find((el) => el._id === over.data.current?.columnId);
+        let new_notes = column_to_push![0].notes.filter((t) => t._id !== active.id)
+        new_notes.splice(overIndex, 0, active.data.current?.task)
+        let new_columns = columns?.map((el) => el._id === over.data.current?.columnId ? { ...el, notes: new_notes } : el)
+        setColumns(new_columns!)
+        const column_push = new_columns?.find((el) => el._id === over.data.current?.columnId)
         dispatch(UpdateNotesOrderAsync({
           _id: column_push!._id, notes: column_push!.notes.map(el => el._id)
         }))
-      }
-      const isOverAColumn = over.data.current?.type === "Column";
-      // Im dropping a Task over a column 
-      if (isActiveATask && isOverAColumn) {
-        let column_to_push = columns?.filter((el) => el._id === overId)
-        let column_to_pull = columns?.filter((el) => el._id === active.data.current?.columnId)
-        let seRepite = false
-        column_to_push![0].notes.forEach((el) => el._id === active.data.current?.task._id ? seRepite = true : null)
-        const column_push_copy = { ...column_to_push![0] };
-        if (!seRepite) {
-          column_push_copy.notes = [...column_to_push![0].notes, active.data.current?.task]
-        }
-        let new_notes_push = column_push_copy!.notes
-        let new_notes = column_to_pull![0].notes.filter((el) => el._id !== active.id)
-        const column_push = column_to_push?.find((el) => el._id === overId)
-        const column_pull = column_to_pull?.find((el) => el._id === active.data.current?.columnId)
-        dispatch(UpdateNotesOrderAsync({
-          _id: column_push!._id, notes: new_notes_push!.map(el => el._id)
-        }))
-        dispatch(UpdateNotesOrderAsync({
-          _id: column_pull!._id, notes: new_notes!.map(el => el._id)
-        }))
-      }
-    }
-  }
-
-  function onDragOver(event: DragOverEvent) {
-    const { active, over } = event;
-    if (!over) return;
-    const activeId = active.id;
-    const overId = over.id;
-    if (activeId === overId) return;
-    const isActiveATask = active.data.current?.type === "task";
-    const isActiveAColumn = active.data.current?.type === "Column";
-    const isOverATask = over.data.current?.type === "task";
-    if (!isActiveATask) return;
-    // Im dropping a Task over another Task
-    if (isActiveATask && isOverATask) {
-      let column_to_push = columns?.filter((el) => el._id === over.data.current?.columnId);
-      let column_to_pull = columns?.filter((el) => el._id === active.data.current?.columnId);
-      if (column_to_pull![0]._id !== column_to_push![0]._id) {
-        let new_col: NoteResponse[] = [];
-        column_to_push![0].notes.forEach(el => {
-          new_col.push(el);
-        });
-        new_col.splice(over.data.current?.sortable.index, 0, active.data.current?.task);
-        let new_notes = column_to_pull![0].notes.filter((el) => el._id !== active.id);
-        let new_columns = columns?.map((el) => el._id === over.data.current?.columnId ? { ...el, notes: new_col } : el._id === active.data.current?.columnId ? { ...el, notes: new_notes } : el);
-        setColumns(new_columns!);
-      } else {
-        const overIndex = column_to_push![0].notes!.findIndex((t) => t._id === overId);
-        let new_notes = column_to_push![0].notes.filter((t) => t._id !== active.id);
-        new_notes.splice(overIndex, 0, active.data.current?.task);
-        let new_columns = columns?.map((el) => el._id === over.data.current?.columnId ? { ...el, notes: new_notes } : el);
-        setColumns(new_columns!);
       }
     }
     const isOverAColumn = over.data.current?.type === "Column";
     // Im dropping a Task over a column 
     if (isActiveATask && isOverAColumn) {
-      let column_to_push = columns?.filter((el) => el._id === overId);
-      let column_to_pull = columns?.filter((el) => el._id === active.data.current?.columnId);
-      let seRepite = false;
-      column_to_push![0].notes.forEach((el) => el._id === active.data.current?.task._id ? seRepite = true : null);
+      let column_to_push = columns?.filter((el) => el._id === overId)
+      let column_to_pull = columns?.filter((el) => el._id === active.data.current?.columnId)
+      let seRepite = false
+      column_to_push![0].notes.forEach((el) => el._id === active.data.current?.task._id ? seRepite = true : null)
       const column_push_copy = { ...column_to_push![0] };
       if (!seRepite) {
-        column_push_copy.notes = [...column_to_push![0].notes, active.data.current?.task];
+        column_push_copy.notes = [...column_to_push![0].notes, active.data.current?.task]
       }
-      let new_notes_push = column_push_copy!.notes;
-      let new_notes = column_to_pull![0].notes.filter((el) => el._id !== active.id);
-      let new_columns = columns?.map((el) => el._id === overId ? { ...el, notes: new_notes_push } : el._id === active.data.current?.columnId ? { ...el, notes: new_notes } : el);
-      setColumns(new_columns!);
-    }
-    if (isActiveAColumn) {
-      if (columns === null) return null
-      const activeColumnIndex = columns.findIndex((col) => col._id === activeId);
-      const overColumnIndex = columns.findIndex((col) => col._id === overId);
-      const new_columns_order = arrayMove(columns, activeColumnIndex, overColumnIndex)
-      setColumns(new_columns_order);
-      const columns_id = new_columns_order.map((col) => col._id)
-      setColumnsId(columns_id)
+      let new_notes_push = column_push_copy!.notes
+      let new_notes = column_to_pull![0].notes.filter((el) => el._id !== active.id)
+      let new_columns = columns?.map((el) => el._id === overId ? { ...el, notes: new_notes_push } : el._id === active.data.current?.columnId ? { ...el, notes: new_notes } : el)
+      setColumns(new_columns!)
+      const column_push = column_to_push?.find((el) => el._id === overId)
+      const column_pull = column_to_pull?.find((el) => el._id === active.data.current?.columnId)
+      dispatch(UpdateNotesOrderAsync({
+        _id: column_push!._id, notes: new_notes_push!.map(el => el._id)
+      }))
+      dispatch(UpdateNotesOrderAsync({
+        _id: column_pull!._id, notes: new_notes!.map(el => el._id)
+      }))
     }
   }
 }
