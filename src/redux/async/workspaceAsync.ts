@@ -92,7 +92,7 @@ export const PostWorkSpaceAsync = createAsyncThunk(
 );
 
 export const DeleteWorkSpaceAsync = createAsyncThunk(
-  "workspace/postworkspace",
+  "workspace/deleteworkspace",
   async (work_space_id: string, thunkApi) => {
     try {
       const token = localStorage.getItem("access_token")

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { initialWorkSpaceState } from "../../interface/slice";
-import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetCurrentWorkSpace, GetWorkSpaceAsync, PostColumnAsync, PostTaskAsync } from "../async/workspaceAsync";
+import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetCurrentWorkSpace, GetWorkSpaceAsync, PostColumnAsync, PostTaskAsync, PostWorkSpaceAsync } from "../async/workspaceAsync";
 import { ColumnResponse } from "../../interface/column";
 import { NoteResponse } from "../../interface/note";
 
@@ -17,18 +17,22 @@ export const WorkSpaceSlice: any = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     /* LOGIN */
-    builder.addCase(GetWorkSpaceAsync.pending, (state, _action) => {
-      state.loading = true;
-    });
     builder.addCase(GetWorkSpaceAsync.fulfilled, (state, { payload }) => {
       state.loading = false;
       state.error = false;
       state.workspaces = payload;
     });
+    builder.addCase(GetWorkSpaceAsync.pending, (state, _action) => {
+      state.loading = true;
+    });
     builder.addCase(GetWorkSpaceAsync.rejected, (state, _) => {
       state.loading = false;
       state.error = true;
       state.workspaces = null;
+    });
+    builder.addCase(PostWorkSpaceAsync.fulfilled, (state, _) => {
+      state.loading = false;
+      state.error = true;
     });
     builder.addCase(DeleteWorkSpaceAsync.fulfilled, (state, _) => {
       state.currentWorkSpace = null;
@@ -102,5 +106,4 @@ export const WorkSpaceSlice: any = createSlice({
     });
   },
 });
-export const { setCurrentWorkSpace } = WorkSpaceSlice.actions;
 export default WorkSpaceSlice.reducer;

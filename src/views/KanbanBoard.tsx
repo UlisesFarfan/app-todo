@@ -22,6 +22,7 @@ import { DeleteColumnAsync, DeleteTaskAsync, DeleteWorkSpaceAsync, GetWorkSpaceA
 import { Button, Input, Modal, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import EditIcon from "../icons/EditIcon";
 import TrashIcon from "../icons/TrashIcon";
+import { useNavigate } from "react-router-dom";
 
 function KanbanBoard() {
 
@@ -34,6 +35,7 @@ function KanbanBoard() {
   const [activeColumn, setActiveColumn] = useState<ColumnResponse | null>(null);
   const [activeTask, setActiveTask] = useState<NoteResponse | null>(null);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const navigate = useNavigate()
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -106,6 +108,7 @@ function KanbanBoard() {
                               .then((() => {
                                 dispatch(GetWorkSpaceAsync())
                               }))
+                            navigate("/");
                           }
                         }}>
                           Delete
