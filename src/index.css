@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+
+  /* el pizarrón, el papel de las fichas y la tinta */
+  --color-pizarra: #e7ecf0;
+  --color-pizarra-hondo: #dbe2e8;
+  --color-papel: #ffffff;
+  --color-borde: #c6d0d9;
+  --color-tinta: #1c2430;
+  --color-gris: #56626f;
+
+  /* marcadores: cada columna tiene el suyo */
+  --color-azul: #2146c7;
+  --color-verde: #17804b;
+  --color-rojo: #c2362b;
+  --color-violeta: #7a3fc2;
+  --color-naranja: #a65f00;
+
+  /* fondo de los botones con texto blanco */
+  --color-accion: #2146c7;
+  --color-accion-hover: #1a379e;
+  --color-peligro: #c2362b;
+  --color-peligro-hover: #9e2b22;
+}
+
+/* Tema oscuro: la pizarra de tiza. Sigue al sistema salvo que se elija otro con el botón
+   (data-tema en <html>, ver src/ui/tema.tsx). CSS no tiene mixins: los dos bloques van iguales. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    color-scheme: dark;
+    --color-pizarra: #1c2623;
+    --color-pizarra-hondo: #253330;
+    --color-papel: #2e3d39;
+    --color-borde: #3f524d;
+    --color-tinta: #e8efec;
+    --color-gris: #a3b3ae;
+    --color-azul: #8aa4ff;
+    --color-verde: #5ccb95;
+    --color-rojo: #ff8a7a;
+    --color-violeta: #c29bff;
+    --color-naranja: #f2ae4e;
+    --color-accion: #3556d8;
+    --color-accion-hover: #2a47be;
+    --color-peligro: #c43d31;
+    --color-peligro-hover: #a8332a;
+  }
+}
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+  --color-pizarra: #1c2623;
+  --color-pizarra-hondo: #253330;
+  --color-papel: #2e3d39;
+  --color-borde: #3f524d;
+  --color-tinta: #e8efec;
+  --color-gris: #a3b3ae;
+  --color-azul: #8aa4ff;
+  --color-verde: #5ccb95;
+  --color-rojo: #ff8a7a;
+  --color-violeta: #c29bff;
+  --color-naranja: #f2ae4e;
+  --color-accion: #3556d8;
+  --color-accion-hover: #2a47be;
+  --color-peligro: #c43d31;
+  --color-peligro-hover: #a8332a;
+}
+
+@layer base {
+  html {
+    background: var(--color-pizarra);
+    color: var(--color-tinta);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply font-sans text-base leading-normal;
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-azul);
+    outline-offset: 2px;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Una ficha de papel sobre el pizarrón: borde fino y el canto de abajo. */
+@utility ficha {
+  background: var(--color-papel);
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  box-shadow: 0 1px 0 var(--color-borde);
+}
+
+/* Despegada del pizarrón mientras se arrastra. */
+@utility ficha-levantada {
+  rotate: -2.5deg;
+  box-shadow:
+    0 14px 24px -10px rgb(28 36 48 / 0.35),
+    0 2px 0 var(--color-borde);
+}
+
+/* El imán que sostiene la ficha, del color de su columna (--marcador). */
+@utility iman {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.55) 0 2px, transparent 3px), var(--marcador);
+  box-shadow: 0 1px 1px rgb(28 36 48 / 0.35);
+}
+
+@utility boton {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 font-bold transition-colors disabled:opacity-50;
+}
+@utility boton-primario {
+  @apply boton bg-accion text-white hover:bg-accion-hover;
+}
+@utility boton-secundario {
+  @apply boton border border-borde bg-papel text-tinta hover:bg-pizarra-hondo;
+}
+@utility boton-peligro {
+  @apply boton bg-peligro text-white hover:bg-peligro-hover;
+}
+@utility boton-icono {
+  @apply inline-flex size-9 shrink-0 items-center justify-center rounded-md text-gris transition-colors hover:bg-pizarra-hondo hover:text-tinta;
+}
+
+/* La ficha de la portada viaja de Pendiente a Hecho una sola vez. */
+@keyframes viaje {
+  0% {
+    translate: 0 0;
+  }
+  15% {
+    translate: 0 -6px;
+    rotate: -3deg;
+    box-shadow: 0 14px 24px -10px rgb(28 36 48 / 0.35);
+  }
+  85% {
+    translate: calc(200% + 64px) -6px;
+    rotate: -3deg;
+    box-shadow: 0 14px 24px -10px rgb(28 36 48 / 0.35);
+  }
+  100% {
+    translate: calc(200% + 64px) 0;
+    rotate: 0deg;
+  }
+}
+.viaja {
+  animation: viaje 1.6s cubic-bezier(0.5, 0, 0.3, 1) 0.9s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .viaja {
+    animation: none;
+  }
+}

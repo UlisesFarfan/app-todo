@@ -1,23 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter as Router } from "react-router-dom";
-import store from './redux/store/store.ts';
-import { Provider } from 'react-redux';
-import App from './App.tsx'
-import './index.css'
-import axios from 'axios';
-import { NextUIProvider } from '@nextui-org/react';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { SesionProvider } from "./sesion";
+import App from "./App";
+import "./index.css";
 
-axios.defaults.baseURL = import.meta.env.VITE_API_ENDPOINT;
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <NextUIProvider>
-        <Router>
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_CLIENT_ID} locale="es">
+      <SesionProvider>
+        <BrowserRouter>
           <App />
-        </Router>
-      </NextUIProvider>
-    </Provider>
-  </React.StrictMode>,
-)
+        </BrowserRouter>
+      </SesionProvider>
+    </GoogleOAuthProvider>
+  </StrictMode>,
+);

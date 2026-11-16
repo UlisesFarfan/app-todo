@@ -1,23 +1,22 @@
-import { Route, Routes } from "react-router-dom";
-import "./App.css";
-import KanbanBoard from "./views/KanbanBoard";
-import Layout from "./layouts/Layout";
-import AuthenticatedMiddleware from "./middlewares/AuthMiddleware";
-import PublicHome from "./views/PublicHome";
-import PrivateHome from "./views/PrivateHome";
+import { Navigate, Route, Routes } from "react-router";
+import { useSesion } from "./sesion";
+import Inicio from "./paginas/Inicio";
+import Tableros from "./paginas/Tableros";
+import TableroPagina from "./paginas/TableroPagina";
+import Marco from "./ui/Marco";
 
-function App() {
+export default function App() {
+  const { usuario, cargando } = useSesion();
+  if (cargando) return <p className="p-6 text-gris">Abriendo tu pizarra…</p>;
+  // sin sesión, cualquier dirección muestra la portada
+  if (!usuario) return <Inicio />;
   return (
     <Routes>
-      <Route element={<Layout />}>
-        <Route element={<AuthenticatedMiddleware />}>
-          <Route path="/" element={<PrivateHome />} />
-          <Route path="/workspace" element={<KanbanBoard />} />
-        </Route>
-        <Route path="/home" element={<PublicHome />} />
+      <Route element={<Marco />}>
+        <Route index element={<Tableros />} />
+        <Route path="t/:id" element={<TableroPagina />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );
 }
-
-export default App;

@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TODO APP BY ULISES FARFAN</title>
+    <meta name="description" content="Tableros de tareas: columnas, fichas y arrastrar hasta Hecho." />
+    <meta name="theme-color" content="#E7ECF0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1C2623" media="(prefers-color-scheme: dark)" />
+    <script>
+      // el tema elegido con el botón, antes de pintar: así no parpadea al abrir
+      try {
+        var t = localStorage.getItem("tema");
+        if (t) document.documentElement.dataset.tema = t;
+      } catch (e) {}
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap"
+      rel="stylesheet"
+    />
+    <title>Pizarra</title>
   </head>
   <body>
     <div id="root"></div>
